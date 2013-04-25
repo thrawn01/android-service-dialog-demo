@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="app_name">ServiceDialogDemo</string>
+	<string name="service_finished">Service Finished</string>
+	<string name="ok">OK</string>
+	<string name="service_task">Service Completed Task %s</string>
+	<string name="service_running">Service Running</string>
 </resources>
