@@ -26,6 +26,7 @@ public class DemoService extends IntentService
 	private Handler mHandler;
 	private NotificationManager mNotifyManager = null;
 	private NotificationCompat.Builder mNotify;
+	private String mCurrentTask = null;
 
 	/**
 	 * A constructor is required, and must call the super IntentService(String)
@@ -64,11 +65,11 @@ public class DemoService extends IntentService
 		// Prepare notifications
 		setUpNotification();
 
-		String action = intent.getAction();
-		if ( action.equals( SYNC ) ) {
+		mCurrentTask = intent.getAction();
+		if ( mCurrentTask.equals( SYNC ) ) {
 			sync();
 		}
-		if ( action.equals( SCAN ) ) {
+		if ( mCurrentTask.equals( SCAN ) ) {
 			scan();
 		}
 		Log.e( "DEMO", "onHandleIntent() - done" );
@@ -189,6 +190,11 @@ public class DemoService extends IntentService
 		public void clearHandler()
 		{
 			DemoService.this.mHandler = null;
+		}
+
+		public String getTask()
+		{
+			return DemoService.this.mCurrentTask;
 		}
 	}
 }

@@ -111,6 +111,11 @@ public class DemoServiceClient
 			{
 				mBinder = (DemoService.LocalBinder) service;
 				mBinder.setHandler( mHandler );
+				if ( mBinder.getTask() == DemoService.SYNC ) {
+					setTitle( mActivity.getString( R.string.sync_running ) );
+				} else {
+					setTitle( mActivity.getString( R.string.scan_running ) );
+				}
 			}
 
 			@Override
@@ -121,5 +126,12 @@ public class DemoServiceClient
 			}
 		};
 		mActivity.bindService( new Intent( mActivity, DemoService.class ), mConnection, 0 );
+	}
+
+	private void setTitle(String title)
+	{
+		if( mProgressDialog != null ) {
+			mProgressDialog.setTitle( title );
+		}
 	}
 }
