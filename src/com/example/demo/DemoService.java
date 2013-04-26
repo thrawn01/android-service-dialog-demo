@@ -44,12 +44,6 @@ public class DemoService extends IntentService
 		return START_STICKY;
 	}
 
-	@Override
-	public void onDestroy()
-	{
-		Log.e( "DEMO", "DemoService.onDestroy()" );
-	}
-
 	/**
 	 * The IntentService calls this method from the default worker thread with
 	 * the intent that started the service. When this method returns, IntentService
