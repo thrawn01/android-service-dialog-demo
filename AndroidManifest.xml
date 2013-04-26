@@ -5,8 +5,7 @@
           android:versionName="1.0">
 	<uses-sdk android:minSdkVersion="10" android:targetSdkVersion="14"/>
 	<application android:label="@string/app_name">
-		<activity android:name="MainActivity"
-		          android:label="@string/app_name">
+		<activity android:name="MainActivity" android:label="@string/app_name" android:launchMode="singleTask">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>
 				<category android:name="android.intent.category.LAUNCHER"/>
@@ -14,9 +13,9 @@
 		</activity>
 		<activity android:name=".SubActivity"/>
 		<service android:name=".DemoService" android:exported="false">
-			<intent-filter >
+			<intent-filter>
 				<action android:name="com.example.demo.action.SYNC"/>
-				<action android:name="com.example.demo.action.SCAN" />
+				<action android:name="com.example.demo.action.SCAN"/>
 			</intent-filter>
 		</service>
 	</application>
