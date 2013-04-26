@@ -23,39 +23,6 @@ public class DemoServiceClient
 	private Activity mActivity;
 
 	public DemoServiceClient(Activity _activity, OnCompleteInterface _callBack) {
-		mConnection = new ServiceConnection()
-		{
-			@Override
-			public void onServiceConnected(ComponentName name, IBinder service)
-			{
-				try {
-					mMessengerSender = new Messenger( service );
-					Message msg = Message.obtain(null, DemoService.REGISTER_CLIENT);
-					msg.replyTo = mMessengerReceiver;
-					mMessengerSender.send( msg );
-				} catch (RemoteException e) {
-					// In this case the service has crashed before we could even
-					// do anything with it; we can count on soon being
-					// disconnected (and then reconnected if it can be restarted)
-					// so there is no need to do anything here.
-				}
-			}
-
-			@Override
-			public void onServiceDisconnected(ComponentName componentName)
-			{
-				try {
-					Message msg = Message.obtain(null, DemoService.UNREGISTER_CLIENT);
-					msg.replyTo = mMessengerReceiver;
-					mMessengerSender.send( msg );
-				} catch (RemoteException e) {
-					// In this case the service has crashed before we could even
-					// do anything with it; we can count on soon being
-					// disconnected (and then reconnected if it can be restarted)
-					// so there is no need to do anything here.
-				}
-			}
-		};
 
 		Handler handler = new Handler() {
 			@Override
@@ -80,7 +47,7 @@ public class DemoServiceClient
 
 		if ( isServiceRunning() ) {
 			showProgress();
-			_activity.bindService( new Intent( _activity, DemoService.class ), mConnection, 0 );
+			connectToService();
 		}
 	}
 
@@ -97,10 +64,22 @@ public class DemoServiceClient
 	 */
 	public  void dismiss()
 	{
+		Log.e("DEBUG", "dismiss()");
 		if ( mProgressDialog != null ) {
+			Log.e("DEBUG", "mProgressDialog.dismiss()");
 			mProgressDialog.dismiss();
 		}
 		if ( mConnection != null ) {
+			try {
+				Log.e("DEMO", "Attempt to un-register");
+				Message msg = Message.obtain(null, DemoService.UNREGISTER_CLIENT);
+				msg.replyTo = mMessengerReceiver;
+				mMessengerSender.send( msg );
+				Log.e("DEMO", "Sent un-register");
+			} catch (RemoteException e) {
+				Log.e("DEMO", "Exception sending un-register");
+			}
+			Log.e("DEBUG", "unbindService()");
 			mActivity.unbindService( mConnection );
 		}
 		mProgressDialog = null;
@@ -122,7 +101,49 @@ public class DemoServiceClient
 	public void start(String job)
 	{
 		mActivity.startService( new Intent( job ) );
-		mActivity.bindService( new Intent( mActivity, DemoService.class ), mConnection, 0 );
 		showProgress();
+		connectToService();
 	}
+
+	private void connectToService()
+	{
+		mConnection = new ServiceConnection()
+		{
+			@Override
+			public void onServiceConnected(ComponentName name, IBinder service)
+			{
+				try {
+					mMessengerSender = new Messenger( service );
+					Message msg = Message.obtain(null, DemoService.REGISTER_CLIENT);
+					msg.replyTo = mMessengerReceiver;
+					mMessengerSender.send( msg );
+				} catch (RemoteException e) {
+					// In this case the service has crashed before we could even
+					// do anything with it; we can count on soon being
+					// disconnected (and then reconnected if it can be restarted)
+					// so there is no need to do anything here.
+				}
+			}
+
+			@Override
+			public void onServiceDisconnected(ComponentName componentName)
+			{
+				try {
+					Log.e("DEMO", "Attempt to un-register");
+					Message msg = Message.obtain(null, DemoService.UNREGISTER_CLIENT);
+					msg.replyTo = mMessengerReceiver;
+					mMessengerSender.send( msg );
+					Log.e("DEMO", "Sent un-register");
+				} catch (RemoteException e) {
+					Log.e("DEMO", "onServiceDisconnect " + e.getMessage() );
+					// In this case the service has crashed before we could even
+					// do anything with it; we can count on soon being
+					// disconnected (and then reconnected if it can be restarted)
+					// so there is no need to do anything here.
+				}
+			}
+		};
+		mActivity.bindService( new Intent( mActivity, DemoService.class ), mConnection, 0 );
+	}
+
 }

@@ -17,7 +17,6 @@ public class DemoService extends IntentService
 	public static final int UNREGISTER_CLIENT = 0x04;
 
 	Messenger mMessengerSender = null;
-	Messenger mMessengerReceiver = null;
 	private Message mLastMessage = null;
 
 	/**
@@ -27,24 +26,6 @@ public class DemoService extends IntentService
 	public DemoService()
 	{
 		super( "DemoService" );
-		mMessengerReceiver = new Messenger( new Handler()
-		{
-			@Override
-			public void handleMessage(Message msg)
-			{
-				switch ( msg.what ) {
-					case REGISTER_CLIENT:
-						Log.e( "DEMO", "REGISTER_CLIENT" );
-						mMessengerSender = msg.replyTo;
-						resendLastMessage();
-						break;
-					case UNREGISTER_CLIENT:
-						Log.e( "DEMO", "UNREGISTER_CLIENT" );
-						mMessengerSender = null;
-						break;
-				}
-			}
-		} );
 	}
 
 	private void resendLastMessage()
@@ -130,6 +111,24 @@ public class DemoService extends IntentService
 	@Override
 	public IBinder onBind(Intent intent)
 	{
+		Messenger mMessengerReceiver = new Messenger( new Handler()
+		{
+			@Override
+			public void handleMessage(Message msg)
+			{
+				switch ( msg.what ) {
+					case REGISTER_CLIENT:
+						Log.e( "DEMO", "REGISTER_CLIENT" );
+						mMessengerSender = msg.replyTo;
+						resendLastMessage();
+						break;
+					case UNREGISTER_CLIENT:
+						Log.e( "DEMO", "UNREGISTER_CLIENT" );
+						mMessengerSender = null;
+						break;
+				}
+			}
+		} );
 		return mMessengerReceiver.getBinder();
 	}
 
