@@ -2,7 +2,10 @@ package com.example.demo;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.os.*;
+import android.os.Binder;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import com.google.common.collect.ImmutableList;
 
@@ -11,13 +14,11 @@ public class DemoService extends IntentService
 {
 	public static final String SCAN = "com.example.demo.action.SCAN";
 	public static final String SYNC = "com.example.demo.action.SYNC";
-	public static final int PROGRESS_STRING = 0x01;
+	public static final int ON_PROGRESS = 0x01;
 	public static final int ON_COMPLETE = 0x02;
-	public static final int REGISTER_CLIENT = 0x03;
-	public static final int UNREGISTER_CLIENT = 0x04;
 
-	Messenger mMessengerSender = null;
 	private Message mLastMessage = null;
+	private Handler mHandler;
 
 	/**
 	 * A constructor is required, and must call the super IntentService(String)
@@ -26,19 +27,6 @@ public class DemoService extends IntentService
 	public DemoService()
 	{
 		super( "DemoService" );
-	}
-
-	private void resendLastMessage()
-	{
-		Log.e( "DEMO", "resendLastMessage()" );
-		if ( mLastMessage != null ) {
-			try {
-				Log.e( "DEMO", "Sending last Message" );
-				mMessengerSender.send( mLastMessage );
-			} catch ( RemoteException e ) {
-				// Do nothing
-			}
-		}
 	}
 
 	@Override
@@ -69,6 +57,7 @@ public class DemoService extends IntentService
 			Log.e( "DEMO", "Scan Started" );
 			scan();
 		}
+		Log.e( "DEMO", "onHandleIntent() - done" );
 	}
 
 	private void sync()
@@ -86,7 +75,7 @@ public class DemoService extends IntentService
 	private void doWhile(ImmutableList<String> files)
 	{
 		for ( String file : files ) {
-			send( PROGRESS_STRING, 0, file );
+			send( ON_PROGRESS, 0, file );
 			sleep();
 		}
 	}
@@ -111,40 +100,47 @@ public class DemoService extends IntentService
 	@Override
 	public IBinder onBind(Intent intent)
 	{
-		Messenger mMessengerReceiver = new Messenger( new Handler()
-		{
-			@Override
-			public void handleMessage(Message msg)
-			{
-				switch ( msg.what ) {
-					case REGISTER_CLIENT:
-						Log.e( "DEMO", "REGISTER_CLIENT" );
-						mMessengerSender = msg.replyTo;
-						resendLastMessage();
-						break;
-					case UNREGISTER_CLIENT:
-						Log.e( "DEMO", "UNREGISTER_CLIENT" );
-						mMessengerSender = null;
-						break;
-				}
-			}
-		} );
-		return mMessengerReceiver.getBinder();
+		return new LocalBinder();
 	}
 
 	private void send(int type, int arg1, String message)
 	{
-		try {
-			Log.e( "DEMO", "Sending Message " + message );
-			mLastMessage = Message.obtain( null, type, message );
-			mLastMessage.arg1 = arg1;
+		Log.e( "DEMO", "Sending Message " + message );
+		// We do not obtain() a new message from the message pool
+		// because we want to save the last message sent, incase we
+		// must resend it when the client reconnects
+		mLastMessage = new Message();
+		mLastMessage.what = type;
+		mLastMessage.obj = message;
+		mLastMessage.arg1 = arg1;
+		sendMessage( mLastMessage );
+	}
 
-			if ( mMessengerSender != null ) {
-				mMessengerSender.send( mLastMessage );
-			}
-		} catch ( RemoteException e ) {
-			Log.e( "DEMO", "Failed to send - " + message );
-			// Do nothing
+	private void sendMessage(Message message)
+	{
+		if ( message == null || mHandler == null ) {
+			Log.e( "DEMO", "sendMessage() - handler or message was null" );
+			return;
+		}
+		Log.e( "DEMO", "mHandler.sendMessage(" + message + ")" );
+		mHandler.sendMessage( Message.obtain( message ) );
+	}
+
+	/**
+	 * Binder interface that allows clients to control the service
+	 */
+	public class LocalBinder extends Binder
+	{
+		public void setHandler(Handler handler)
+		{
+			mHandler = handler;
+			//Log.e( "DEMO", "resendLast" );
+			sendMessage( mLastMessage );
+		}
+
+		public void clearHandler()
+		{
+			DemoService.this.mHandler = null;
 		}
 	}
 }

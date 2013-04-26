@@ -7,7 +7,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.*;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 
 /**
@@ -15,21 +17,23 @@ import android.util.Log;
  */
 public class DemoServiceClient
 {
-	private static ProgressDialog mProgressDialog = null;
-	private static OnCompleteInterface mCallBack = null;
-	private Messenger mMessengerReceiver = null;
-	private Messenger mMessengerSender = null;
-	ServiceConnection mConnection = null;
+	private ProgressDialog mProgressDialog = null;
+	private OnCompleteInterface mCallBack = null;
+	private ServiceConnection mConnection = null;
+	private DemoService.LocalBinder mBinder;
 	private Activity mActivity;
+	private Handler mHandler;
 
-	public DemoServiceClient(Activity _activity, OnCompleteInterface _callBack) {
+	public DemoServiceClient(Activity _activity, OnCompleteInterface _callBack)
+	{
 
-		Handler handler = new Handler() {
+		mHandler = new Handler()
+		{
 			@Override
 			public void handleMessage(Message msg)
 			{
-				switch (msg.what) {
-					case DemoService.PROGRESS_STRING:
+				switch ( msg.what ) {
+					case DemoService.ON_PROGRESS:
 						Log.e( "DEMO", "Client - Progress Message " + msg.obj );
 						mProgressDialog.setMessage( (String) msg.obj );
 						break;
@@ -41,7 +45,6 @@ public class DemoServiceClient
 				}
 			}
 		};
-		mMessengerReceiver = new Messenger(handler);
 		mActivity = _activity;
 		mCallBack = _callBack;
 
@@ -51,7 +54,9 @@ public class DemoServiceClient
 		}
 	}
 
-	private void showProgress() {
+	private void showProgress()
+	{
+		Log.e("DEMO", "showProgress()");
 		mProgressDialog = new ProgressDialog( mActivity );
 		mProgressDialog.setCancelable( false );
 		mProgressDialog.setTitle( R.string.service_running );
@@ -62,39 +67,33 @@ public class DemoServiceClient
 	/**
 	 * Call this from your Activity onStop() method, so the resumeWith() method works correctly
 	 */
-	public  void dismiss()
+	public void dismiss()
 	{
-		Log.e("DEBUG", "dismiss()");
+		Log.e( "DEMO", "dismiss()" );
 		if ( mProgressDialog != null ) {
-			Log.e("DEBUG", "mProgressDialog.dismiss()");
+			Log.e( "DEMO", "mProgressDialog.dismiss()" );
 			mProgressDialog.dismiss();
 		}
 		if ( mConnection != null ) {
-			try {
-				Log.e("DEMO", "Attempt to un-register");
-				Message msg = Message.obtain(null, DemoService.UNREGISTER_CLIENT);
-				msg.replyTo = mMessengerReceiver;
-				mMessengerSender.send( msg );
-				Log.e("DEMO", "Sent un-register");
-			} catch (RemoteException e) {
-				Log.e("DEMO", "Exception sending un-register");
-			}
-			Log.e("DEBUG", "unbindService()");
+			Log.e( "DEMO", "unbindService()" );
 			mActivity.unbindService( mConnection );
+			mBinder.clearHandler();
 		}
 		mProgressDialog = null;
 		mConnection = null;
-		mCallBack = null;
+		mBinder = null;
 	}
 
 	private boolean isServiceRunning()
 	{
 		ActivityManager manager = (ActivityManager) mActivity.getSystemService( Context.ACTIVITY_SERVICE );
-		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-			if (DemoService.class.getName().equals(service.service.getClassName())) {
+		for ( ActivityManager.RunningServiceInfo service : manager.getRunningServices( Integer.MAX_VALUE ) ) {
+			if ( DemoService.class.getName().equals( service.service.getClassName() ) ) {
+				Log.e("DEMO", "isServiceRunning - True");
 				return true;
 			}
 		}
+		Log.e("DEMO", "isServiceRunning - False");
 		return false;
 	}
 
@@ -107,43 +106,25 @@ public class DemoServiceClient
 
 	private void connectToService()
 	{
+		Log.e("DEMO", "connectToService()");
 		mConnection = new ServiceConnection()
 		{
 			@Override
 			public void onServiceConnected(ComponentName name, IBinder service)
 			{
-				try {
-					mMessengerSender = new Messenger( service );
-					Message msg = Message.obtain(null, DemoService.REGISTER_CLIENT);
-					msg.replyTo = mMessengerReceiver;
-					mMessengerSender.send( msg );
-				} catch (RemoteException e) {
-					// In this case the service has crashed before we could even
-					// do anything with it; we can count on soon being
-					// disconnected (and then reconnected if it can be restarted)
-					// so there is no need to do anything here.
-				}
+				Log.e("DEMO", "onServiceConnected()");
+				mBinder = (DemoService.LocalBinder) service;
+				mBinder.setHandler( mHandler );
 			}
 
 			@Override
 			public void onServiceDisconnected(ComponentName componentName)
 			{
-				try {
-					Log.e("DEMO", "Attempt to un-register");
-					Message msg = Message.obtain(null, DemoService.UNREGISTER_CLIENT);
-					msg.replyTo = mMessengerReceiver;
-					mMessengerSender.send( msg );
-					Log.e("DEMO", "Sent un-register");
-				} catch (RemoteException e) {
-					Log.e("DEMO", "onServiceDisconnect " + e.getMessage() );
-					// In this case the service has crashed before we could even
-					// do anything with it; we can count on soon being
-					// disconnected (and then reconnected if it can be restarted)
-					// so there is no need to do anything here.
-				}
+				Log.e("DEMO", "onServiceDisconnected()");
+				mBinder.clearHandler();
+				mBinder = null;
 			}
 		};
 		mActivity.bindService( new Intent( mActivity, DemoService.class ), mConnection, 0 );
 	}
-
 }
