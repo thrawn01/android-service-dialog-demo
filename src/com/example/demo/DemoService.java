@@ -99,6 +99,7 @@ public class DemoService extends IntentService
 				try {
 					wait( endTime - System.currentTimeMillis() );
 				} catch ( Exception e ) {
+					// Do nothing
 				}
 			}
 		}
