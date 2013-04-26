@@ -47,21 +47,26 @@ public class DemoServiceClient
 		};
 		mActivity = _activity;
 		mCallBack = _callBack;
-
-		if ( isServiceRunning() ) {
-			showProgress();
-			connectToService();
-		}
+		show();
 	}
 
 	private void showProgress()
 	{
 		Log.e("DEMO", "showProgress()");
-		mProgressDialog = new ProgressDialog( mActivity );
-		mProgressDialog.setCancelable( false );
-		mProgressDialog.setTitle( R.string.service_running );
-		mProgressDialog.setIndeterminate( true );
+		if (mProgressDialog == null) {
+			mProgressDialog = new ProgressDialog( mActivity );
+			mProgressDialog.setCancelable( false );
+			mProgressDialog.setTitle( R.string.service_running );
+			mProgressDialog.setIndeterminate( true );
+		}
 		mProgressDialog.show();
+	}
+
+	public void show() {
+		if ( isServiceRunning() ) {
+			showProgress();
+			connectToService();
+		}
 	}
 
 	/**
@@ -106,6 +111,9 @@ public class DemoServiceClient
 
 	private void connectToService()
 	{
+		if (mConnection != null ) {
+			return;
+		}
 		Log.e("DEMO", "connectToService()");
 		mConnection = new ServiceConnection()
 		{

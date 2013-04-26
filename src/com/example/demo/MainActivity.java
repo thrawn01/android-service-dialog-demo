@@ -22,8 +22,8 @@ public class MainActivity extends Activity
 			public void onComplete(int count, String who)
 			{
 				new AlertDialog.Builder( MainActivity.this )
-						.setTitle( getString(R.string.service_finished) )
-						.setMessage( String.format(getString(R.string.service_task), who) )
+						.setTitle( getString( R.string.service_finished ) )
+						.setMessage( String.format( getString( R.string.service_task ), who ) )
 						.setPositiveButton( getString( R.string.ok ), null )
 						.show();
 			}
@@ -36,7 +36,7 @@ public class MainActivity extends Activity
 			public void onClick(View view)
 			{
 				Log.e( "DEMO", "SCAN Button Pressed" );
-				mClient.start(DemoService.SYNC);
+				mClient.start( DemoService.SYNC );
 			}
 		} );
 
@@ -47,15 +47,22 @@ public class MainActivity extends Activity
 			public void onClick(View view)
 			{
 				Log.e( "DEMO", "SCAN Button Pressed" );
-				mClient.start(DemoService.SYNC);
+				mClient.start( DemoService.SCAN );
 			}
 		} );
 	}
 
 	@Override
-	public void onStop()
+	public void onResume()
 	{
-		super.onStop();
+		super.onResume();
+		mClient.show();
+	}
+
+	@Override
+	public void onPause()
+	{
+		super.onPause();
 		mClient.dismiss();
 	}
 
