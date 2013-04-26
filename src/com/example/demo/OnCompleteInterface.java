@@ -1,4 +1,4 @@
-package com.example.common;
+package com.example.demo;
 
 /**
  * Call this when the service is complete

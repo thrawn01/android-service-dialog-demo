@@ -1,11 +1,14 @@
-package com.example.common;
+package com.example.demo;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.*;
-import com.example.demo.R;
+import android.util.Log;
 
 /**
  * Client that manages the progress dialog and communication with the service
@@ -17,8 +20,9 @@ public class DemoServiceClient
 	private Messenger mMessengerReceiver = null;
 	private Messenger mMessengerSender = null;
 	ServiceConnection mConnection = null;
+	private Activity mActivity;
 
-	public DemoServiceClient() {
+	public DemoServiceClient(Activity _activity, OnCompleteInterface _callBack) {
 		mConnection = new ServiceConnection()
 		{
 			@Override
@@ -50,6 +54,7 @@ public class DemoServiceClient
 					// disconnected (and then reconnected if it can be restarted)
 					// so there is no need to do anything here.
 				}
+				mConnection = null;
 			}
 		};
 
@@ -59,39 +64,33 @@ public class DemoServiceClient
 			{
 				switch (msg.what) {
 					case DemoService.PROGRESS_STRING:
+						Log.e( "DEMO", "Client - Progress Message " + msg.obj );
 						mProgressDialog.setMessage( (String) msg.obj );
 						break;
 					case DemoService.ON_COMPLETE:
+						Log.e( "DEMO", "Client - On Complete " + msg.obj );
 						mCallBack.onComplete( msg.arg1, (String) msg.obj );
+						dismiss();
 						break;
 				}
 			}
 		};
 		mMessengerReceiver = new Messenger(handler);
-	}
+		mActivity = _activity;
+		mCallBack = _callBack;
 
-	/**
-	 * Call this from your Activity onCreate() method, to redisplay the progress dialog
-	 * during orientation changes, will only show dialog if the service is running
-	 */
-	public static void resumeWith(Activity activity, OnCompleteInterface _callBack)
-	{
 		if ( isServiceRunning() ) {
-			init( activity, _callBack );
+			showProgress();
+			_activity.bindService( new Intent( _activity, DemoService.class ), mConnection, 0 );
 		}
 	}
 
-	/**
-	 * Show the progress dialog and set our onComplete callback
-	 */
-	public synchronized static void init(Activity activity, OnCompleteInterface _callBack)
-	{
-		mProgressDialog = new ProgressDialog( activity );
+	private void showProgress() {
+		mProgressDialog = new ProgressDialog( mActivity );
 		mProgressDialog.setCancelable( false );
 		mProgressDialog.setTitle( R.string.service_running );
 		mProgressDialog.setIndeterminate( true );
 		mProgressDialog.show();
-		mCallBack = _callBack;
 	}
 
 	/**
@@ -106,9 +105,21 @@ public class DemoServiceClient
 		mCallBack = null;
 	}
 
-	private static boolean isServiceRunning()
+	private boolean isServiceRunning()
 	{
+		ActivityManager manager = (ActivityManager) mActivity.getSystemService( Context.ACTIVITY_SERVICE );
+		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+			if (DemoService.class.getName().equals(service.service.getClassName())) {
+				return true;
+			}
+		}
 		return false;
 	}
 
+	public void start(String job)
+	{
+		mActivity.startService( new Intent( job ) );
+		mActivity.bindService( new Intent( mActivity, DemoService.class ), mConnection, 0 );
+		showProgress();
+	}
 }

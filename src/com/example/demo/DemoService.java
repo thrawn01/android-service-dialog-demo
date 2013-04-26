@@ -1,4 +1,4 @@
-package com.example.common;
+package com.example.demo;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -9,8 +9,8 @@ import com.google.common.collect.ImmutableList;
 
 public class DemoService extends IntentService
 {
-	public static final String SCAN = "DEMO_SCAN";
-	public static final String SYNC = "DEMO_SYNC";
+	public static final String SCAN = "com.example.demo.action.SCAN";
+	public static final String SYNC = "com.example.demo.action.SYNC";
 	public static final int PROGRESS_STRING = 0x01;
 	public static final int ON_COMPLETE = 0x02;
 	public static final int REGISTER_CLIENT = 0x03;
@@ -18,6 +18,7 @@ public class DemoService extends IntentService
 
 	Messenger mMessengerSender = null;
 	Messenger mMessengerReceiver = null;
+	private Message mLastMessage = null;
 
 	/**
 	 * A constructor is required, and must call the super IntentService(String)
@@ -33,14 +34,37 @@ public class DemoService extends IntentService
 			{
 				switch ( msg.what ) {
 					case REGISTER_CLIENT:
+						Log.e("DEMO", "REGISTER_CLIENT");
 						mMessengerSender = msg.replyTo;
+						resendLastMessage();
 						break;
 					case UNREGISTER_CLIENT:
+						Log.e("DEMO", "UNREGISTER_CLIENT");
 						mMessengerSender = null;
 						break;
 				}
 			}
 		} );
+	}
+
+	private void resendLastMessage()
+	{
+		Log.e("DEMO", "resendLastMessage()");
+		if ( mLastMessage != null ) {
+			try {
+				Log.e("DEMO", "Sending last Message");
+				mMessengerSender.send( mLastMessage );
+			} catch ( RemoteException e ) {
+				// Do nothing
+			}
+		}
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId)
+	{
+		onStart( intent, startId );
+		return START_STICKY;
 	}
 
 	/**
@@ -51,13 +75,14 @@ public class DemoService extends IntentService
 	@Override
 	protected void onHandleIntent(Intent intent)
 	{
+		Log.e( "DEMO", "onHandleIntent()" );
 		String action = intent.getAction();
 		if ( action.equals( SYNC ) ) {
-			Log.e( "DEBUG", "Sync Started" );
+			Log.e( "DEMO", "Sync Started" );
 			sync();
 		}
 		if ( action.equals( SCAN ) ) {
-			Log.e( "DEBUG", "Scan Started" );
+			Log.e( "DEMO", "Scan Started" );
 			scan();
 		}
 	}
@@ -108,12 +133,15 @@ public class DemoService extends IntentService
 	private void send(int type, int arg1, String message)
 	{
 		try {
+			Log.e( "DEMO", "Sending Message " + message );
+			mLastMessage = Message.obtain( null, type, message );
+			mLastMessage.arg1 = arg1;
+
 			if ( mMessengerSender != null ) {
-				Message msg = Message.obtain( null, type, message );
-				msg.arg1 = arg1;
-				mMessengerSender.send( msg );
+				mMessengerSender.send( mLastMessage );
 			}
 		} catch ( RemoteException e ) {
+			Log.e("DEMO", "Failed to send - " + message );
 			// Do nothing
 		}
 	}
