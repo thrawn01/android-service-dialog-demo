@@ -3,7 +3,6 @@ package com.example.demo;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -35,7 +34,6 @@ public class MainActivity extends Activity
 			@Override
 			public void onClick(View view)
 			{
-				Log.e( "DEMO", "SCAN Button Pressed" );
 				mClient.start( DemoService.SYNC );
 			}
 		} );
@@ -46,7 +44,6 @@ public class MainActivity extends Activity
 			@Override
 			public void onClick(View view)
 			{
-				Log.e( "DEMO", "SCAN Button Pressed" );
 				mClient.start( DemoService.SCAN );
 			}
 		} );

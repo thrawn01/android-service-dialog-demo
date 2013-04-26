@@ -8,7 +8,6 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.util.Log;
 import android.support.v4.app.NotificationCompat;
 import com.google.common.collect.ImmutableList;
 
@@ -57,17 +56,13 @@ public class DemoService extends IntentService
 		// Prepare notifications
 		setUpNotification();
 
-		Log.e( "DEMO", "onHandleIntent()" );
 		String action = intent.getAction();
 		if ( action.equals( SYNC ) ) {
-			Log.e( "DEMO", "Sync Started" );
 			sync();
 		}
 		if ( action.equals( SCAN ) ) {
-			Log.e( "DEMO", "Scan Started" );
 			scan();
 		}
-		Log.e( "DEMO", "onHandleIntent() - done" );
 		tearDownNotification();
 	}
 
@@ -117,7 +112,6 @@ public class DemoService extends IntentService
 
 	private void send(int type, int arg1, String message)
 	{
-		Log.e( "DEMO", "Sending Message " + message );
 		// We do not obtain() a new message from the message pool
 		// because we want to save the last message sent, incase we
 		// must resend it when the client reconnects
@@ -131,10 +125,8 @@ public class DemoService extends IntentService
 	private void sendMessage(Message message)
 	{
 		if ( message == null || mHandler == null ) {
-			Log.e( "DEMO", "sendMessage() - handler or message was null" );
 			return;
 		}
-		Log.e( "DEMO", "mHandler.sendMessage(" + message + ")" );
 		mHandler.sendMessage( Message.obtain( message ) );
 	}
 
@@ -180,7 +172,6 @@ public class DemoService extends IntentService
 		public void setHandler(Handler handler)
 		{
 			mHandler = handler;
-			//Log.e( "DEMO", "resendLast" );
 			sendMessage( mLastMessage );
 		}
 
