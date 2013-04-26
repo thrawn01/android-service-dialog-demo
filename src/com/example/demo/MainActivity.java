@@ -50,6 +50,17 @@ public class MainActivity extends Activity
 			}
 		} );
 
+		Button runBoth = (Button) findViewById( R.id.run_both_button );
+		runBoth.setOnClickListener( new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View view)
+			{
+				mClient.start( DemoService.SCAN );
+				mClient.start( DemoService.SYNC );
+			}
+		} );
+
 		Button subActivityButton = (Button) findViewById( R.id.sub_activity_button );
 		subActivityButton.setOnClickListener( new View.OnClickListener()
 		{

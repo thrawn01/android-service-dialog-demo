@@ -10,4 +10,5 @@
 	<string name="sub_activity">Sub Activity</string>
 	<string name="sync_running">Sync Running</string>
 	<string name="scan_running">Scan Running</string>
+	<string name="run_both">Run Both</string>
 </resources>

@@ -18,6 +18,11 @@
 	<Button
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
+			android:text="@string/run_both"
+			android:id="@+id/run_both_button" android:layout_gravity="center"/>
+	<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
 			android:text="@string/sub_activity"
 			android:id="@+id/sub_activity_button" android:layout_gravity="center"/>
 </LinearLayout>
