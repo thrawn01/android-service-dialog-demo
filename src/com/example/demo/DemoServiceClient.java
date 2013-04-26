@@ -54,7 +54,6 @@ public class DemoServiceClient
 					// disconnected (and then reconnected if it can be restarted)
 					// so there is no need to do anything here.
 				}
-				mConnection = null;
 			}
 		};
 
@@ -96,12 +95,16 @@ public class DemoServiceClient
 	/**
 	 * Call this from your Activity onStop() method, so the resumeWith() method works correctly
 	 */
-	public synchronized static void dismiss()
+	public  void dismiss()
 	{
 		if ( mProgressDialog != null ) {
 			mProgressDialog.dismiss();
 		}
+		if ( mConnection != null ) {
+			mActivity.unbindService( mConnection );
+		}
 		mProgressDialog = null;
+		mConnection = null;
 		mCallBack = null;
 	}
 

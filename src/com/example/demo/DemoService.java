@@ -34,12 +34,12 @@ public class DemoService extends IntentService
 			{
 				switch ( msg.what ) {
 					case REGISTER_CLIENT:
-						Log.e("DEMO", "REGISTER_CLIENT");
+						Log.e( "DEMO", "REGISTER_CLIENT" );
 						mMessengerSender = msg.replyTo;
 						resendLastMessage();
 						break;
 					case UNREGISTER_CLIENT:
-						Log.e("DEMO", "UNREGISTER_CLIENT");
+						Log.e( "DEMO", "UNREGISTER_CLIENT" );
 						mMessengerSender = null;
 						break;
 				}
@@ -49,10 +49,10 @@ public class DemoService extends IntentService
 
 	private void resendLastMessage()
 	{
-		Log.e("DEMO", "resendLastMessage()");
+		Log.e( "DEMO", "resendLastMessage()" );
 		if ( mLastMessage != null ) {
 			try {
-				Log.e("DEMO", "Sending last Message");
+				Log.e( "DEMO", "Sending last Message" );
 				mMessengerSender.send( mLastMessage );
 			} catch ( RemoteException e ) {
 				// Do nothing
@@ -75,6 +75,9 @@ public class DemoService extends IntentService
 	@Override
 	protected void onHandleIntent(Intent intent)
 	{
+		if ( intent == null )
+			return;
+
 		Log.e( "DEMO", "onHandleIntent()" );
 		String action = intent.getAction();
 		if ( action.equals( SYNC ) ) {
@@ -141,7 +144,7 @@ public class DemoService extends IntentService
 				mMessengerSender.send( mLastMessage );
 			}
 		} catch ( RemoteException e ) {
-			Log.e("DEMO", "Failed to send - " + message );
+			Log.e( "DEMO", "Failed to send - " + message );
 			// Do nothing
 		}
 	}
