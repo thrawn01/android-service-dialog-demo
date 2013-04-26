@@ -33,10 +33,12 @@ public class DemoServiceClient
 			{
 				switch ( msg.what ) {
 					case DemoService.ON_PROGRESS:
-						mProgressDialog.setMessage( (String) msg.obj );
+						if ( mProgressDialog != null )
+							mProgressDialog.setMessage( (String) msg.obj );
 						break;
 					case DemoService.ON_COMPLETE:
-						mCallBack.onComplete( msg.arg1, (String) msg.obj );
+						if ( mCallBack != null )
+							mCallBack.onComplete( msg.arg1, (String) msg.obj );
 						dismiss();
 						break;
 				}
@@ -49,7 +51,7 @@ public class DemoServiceClient
 
 	private void showProgress()
 	{
-		if (mProgressDialog == null) {
+		if ( mProgressDialog == null ) {
 			mProgressDialog = new ProgressDialog( mActivity );
 			mProgressDialog.setCancelable( false );
 			mProgressDialog.setTitle( R.string.service_running );
@@ -58,7 +60,8 @@ public class DemoServiceClient
 		mProgressDialog.show();
 	}
 
-	public void show() {
+	public void show()
+	{
 		if ( isServiceRunning() ) {
 			showProgress();
 			connectToService();
@@ -70,13 +73,9 @@ public class DemoServiceClient
 	 */
 	public void dismiss()
 	{
-		if ( mProgressDialog != null ) {
-			mProgressDialog.dismiss();
-		}
-		if ( mConnection != null ) {
-			mActivity.unbindService( mConnection );
-			mBinder.clearHandler();
-		}
+		if ( mProgressDialog != null ) mProgressDialog.dismiss();
+		if ( mConnection != null ) mActivity.unbindService( mConnection );
+		if ( mBinder != null ) mBinder.clearHandler();
 		mProgressDialog = null;
 		mConnection = null;
 		mBinder = null;
@@ -102,7 +101,7 @@ public class DemoServiceClient
 
 	private void connectToService()
 	{
-		if (mConnection != null ) {
+		if ( mConnection != null ) {
 			return;
 		}
 		mConnection = new ServiceConnection()

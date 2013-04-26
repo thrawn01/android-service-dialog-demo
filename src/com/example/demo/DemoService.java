@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 import com.google.common.collect.ImmutableList;
 
 
@@ -42,6 +43,12 @@ public class DemoService extends IntentService
 		return START_STICKY;
 	}
 
+	@Override
+	public void onDestroy()
+	{
+		Log.e( "DEMO", "DemoService.onDestroy()" );
+	}
+
 	/**
 	 * The IntentService calls this method from the default worker thread with
 	 * the intent that started the service. When this method returns, IntentService
@@ -50,6 +57,7 @@ public class DemoService extends IntentService
 	@Override
 	protected void onHandleIntent(Intent intent)
 	{
+		Log.e( "DEMO", "onHandleIntent() - start" );
 		if ( intent == null )
 			return;
 
@@ -63,6 +71,7 @@ public class DemoService extends IntentService
 		if ( action.equals( SCAN ) ) {
 			scan();
 		}
+		Log.e( "DEMO", "onHandleIntent() - done" );
 		tearDownNotification();
 	}
 

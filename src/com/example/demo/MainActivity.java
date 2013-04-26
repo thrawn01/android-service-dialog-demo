@@ -3,6 +3,7 @@ package com.example.demo;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -52,6 +53,7 @@ public class MainActivity extends Activity
 	@Override
 	public void onResume()
 	{
+		Log.e( "DEMO", "onResume()" );
 		super.onResume();
 		mClient.show();
 	}
@@ -59,8 +61,15 @@ public class MainActivity extends Activity
 	@Override
 	public void onPause()
 	{
+		Log.e( "DEMO", "onPause()" );
 		super.onPause();
 		mClient.dismiss();
 	}
 
+	@Override
+	public void onDestroy()
+	{
+		Log.e( "DEMO", "onDestroy()" );
+		super.onDestroy();
+	}
 }
