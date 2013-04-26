@@ -182,6 +182,7 @@ public class DemoService extends IntentService
 		public void setHandler(Handler handler)
 		{
 			mHandler = handler;
+			// Resend the last message
 			sendMessage( mLastMessage );
 		}
 

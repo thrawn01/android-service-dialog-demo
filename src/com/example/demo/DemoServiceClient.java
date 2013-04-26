@@ -63,8 +63,8 @@ public class DemoServiceClient
 	public void show()
 	{
 		if ( isServiceRunning() ) {
-			showProgress();
 			connectToService();
+			showProgress();
 		}
 	}
 
@@ -95,8 +95,8 @@ public class DemoServiceClient
 	public void start(String job)
 	{
 		mActivity.startService( new Intent( job ) );
-		showProgress();
 		connectToService();
+		showProgress();
 	}
 
 	private void connectToService()

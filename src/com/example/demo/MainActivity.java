@@ -2,6 +2,7 @@ package com.example.demo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -29,8 +30,8 @@ public class MainActivity extends Activity
 			}
 		} );
 
-		Button sync_button = (Button) findViewById( R.id.sync_button );
-		sync_button.setOnClickListener( new View.OnClickListener()
+		Button syncButton = (Button) findViewById( R.id.sync_button );
+		syncButton.setOnClickListener( new View.OnClickListener()
 		{
 			@Override
 			public void onClick(View view)
@@ -39,13 +40,23 @@ public class MainActivity extends Activity
 			}
 		} );
 
-		Button scan_button = (Button) findViewById( R.id.scan_button );
-		scan_button.setOnClickListener( new View.OnClickListener()
+		Button scanButton = (Button) findViewById( R.id.scan_button );
+		scanButton.setOnClickListener( new View.OnClickListener()
 		{
 			@Override
 			public void onClick(View view)
 			{
 				mClient.start( DemoService.SCAN );
+			}
+		} );
+
+		Button subActivityButton = (Button) findViewById( R.id.sub_activity_button );
+		subActivityButton.setOnClickListener( new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View view)
+			{
+				startActivity( new Intent( MainActivity.this, SubActivity.class ) );
 			}
 		} );
 	}

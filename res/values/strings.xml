@@ -7,4 +7,5 @@
 	<string name="service_running">Service Running</string>
 	<string name="sync">Sync</string>
 	<string name="scan">Scan</string>
+	<string name="sub_activity">Sub Activity</string>
 </resources>
