@@ -56,8 +56,7 @@ public class MainActivity extends Activity
 			@Override
 			public void onClick(View view)
 			{
-				mClient.start( DemoService.SCAN );
-				mClient.start( DemoService.SYNC );
+				mClient.start( DemoService.BOTH );
 			}
 		} );
 

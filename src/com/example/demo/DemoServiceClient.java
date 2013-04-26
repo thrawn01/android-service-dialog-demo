@@ -41,6 +41,9 @@ public class DemoServiceClient
 							mCallBack.onComplete( msg.arg1, (String) msg.obj );
 						dismiss();
 						break;
+					case DemoService.ON_TASK_CHANGE:
+						setTitle( mBinder.getTask() );
+						break;
 				}
 			}
 		};
@@ -111,11 +114,7 @@ public class DemoServiceClient
 			{
 				mBinder = (DemoService.LocalBinder) service;
 				mBinder.setHandler( mHandler );
-				if ( mBinder.getTask() == DemoService.SYNC ) {
-					setTitle( mActivity.getString( R.string.sync_running ) );
-				} else {
-					setTitle( mActivity.getString( R.string.scan_running ) );
-				}
+				setTitle( mBinder.getTask() );
 			}
 
 			@Override
@@ -130,7 +129,12 @@ public class DemoServiceClient
 
 	private void setTitle(String title)
 	{
-		if( mProgressDialog != null ) {
+		if ( title == DemoService.SYNC ) {
+			title = mActivity.getString( R.string.sync_running );
+		} else {
+			title = mActivity.getString( R.string.scan_running );
+		}
+		if ( mProgressDialog != null ) {
 			mProgressDialog.setTitle( title );
 		}
 	}

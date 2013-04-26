@@ -17,8 +17,11 @@ public class DemoService extends IntentService
 {
 	public static final String SCAN = "com.example.demo.action.SCAN";
 	public static final String SYNC = "com.example.demo.action.SYNC";
+	public static final String BOTH = "com.example.demo.action.BOTH";
+
 	public static final int ON_PROGRESS = 0x01;
 	public static final int ON_COMPLETE = 0x02;
+	public static final int ON_TASK_CHANGE = 0x03;
 
 	private static final int NOTIFY_ID = 0xF0000000;
 
@@ -66,8 +69,20 @@ public class DemoService extends IntentService
 		if ( mCurrentTask.equals( SCAN ) ) {
 			scan();
 		}
+		if ( mCurrentTask.equals( BOTH ) ) {
+			both();
+		}
 		Log.e( "DEMO", "onHandleIntent() - done" );
 		tearDownNotification();
+	}
+
+	private void both()
+	{
+		setTask(SYNC);
+		doWhile( ImmutableList.<String>of( "sync-one", "sync-two", "sync-three" ) );
+		setTask(SCAN);
+		doWhile( ImmutableList.<String>of( "scan-one", "scan-two", "scan-three" ) );
+		send( ON_COMPLETE, 0, BOTH );
 	}
 
 	private void sync()
@@ -133,6 +148,11 @@ public class DemoService extends IntentService
 			return;
 		}
 		mHandler.sendMessage( Message.obtain( message ) );
+	}
+
+	private void setTask(String task) {
+		mCurrentTask = task;
+		send( ON_TASK_CHANGE, 0, mCurrentTask );
 	}
 
 	public void updateNotification(String message)

@@ -16,6 +16,7 @@
 			<intent-filter>
 				<action android:name="com.example.demo.action.SYNC"/>
 				<action android:name="com.example.demo.action.SCAN"/>
+				<action android:name="com.example.demo.action.BOTH"/>
 			</intent-filter>
 		</service>
 	</application>
