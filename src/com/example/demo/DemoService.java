@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import com.google.common.collect.ImmutableList;
 
 
@@ -40,6 +39,9 @@ public class DemoService extends IntentService
 		super( "DemoService" );
 	}
 
+	/**
+	 * Called when the service calls startService(), queues the task requested
+	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId)
 	{
@@ -55,7 +57,6 @@ public class DemoService extends IntentService
 	@Override
 	protected void onHandleIntent(Intent intent)
 	{
-		Log.e( "DEMO", "onHandleIntent() - start" );
 		if ( intent == null )
 			return;
 
@@ -72,10 +73,12 @@ public class DemoService extends IntentService
 		if ( mCurrentTask.equals( BOTH ) ) {
 			both();
 		}
-		Log.e( "DEMO", "onHandleIntent() - done" );
 		tearDownNotification();
 	}
 
+	/**
+	 * Run both tasks
+	 */
 	private void both()
 	{
 		setTask(SYNC);
@@ -85,18 +88,27 @@ public class DemoService extends IntentService
 		send( ON_COMPLETE, 0, BOTH );
 	}
 
+	/**
+	 * Execute the sync task
+	 */
 	private void sync()
 	{
 		doWhile( ImmutableList.<String>of( "sync-one", "sync-two", "sync-three" ) );
 		send( ON_COMPLETE, 0, SYNC );
 	}
 
+	/**
+	 * Execute the scan task
+	 */
 	private void scan()
 	{
 		doWhile( ImmutableList.<String>of( "scan-one", "scan-two", "scan-three" ) );
 		send( ON_COMPLETE, 0, SCAN );
 	}
 
+	/**
+	 * Helper method to do fake work
+	 */
 	private void doWhile(ImmutableList<String> files)
 	{
 		for ( String file : files ) {
@@ -124,12 +136,18 @@ public class DemoService extends IntentService
 		}
 	}
 
+	/**
+	 * This is called when service client calls bindService()
+	 */
 	@Override
 	public IBinder onBind(Intent intent)
 	{
 		return new LocalBinder();
 	}
 
+	/**
+	 * Send a message, and remember the last message sent
+	 */
 	private void send(int type, int arg1, String message)
 	{
 		// We do not obtain() a new message from the message pool
@@ -142,6 +160,9 @@ public class DemoService extends IntentService
 		sendMessage( mLastMessage );
 	}
 
+	/**
+	 * Send a message if the handler to the service client is connected
+	 */
 	private void sendMessage(Message message)
 	{
 		if ( message == null || mHandler == null ) {
@@ -150,11 +171,17 @@ public class DemoService extends IntentService
 		mHandler.sendMessage( Message.obtain( message ) );
 	}
 
+	/**
+	 * Tell the service client the current task
+	 */
 	private void setTask(String task) {
 		mCurrentTask = task;
 		send( ON_TASK_CHANGE, 0, mCurrentTask );
 	}
 
+	/**
+	 * Update Notification card
+	 */
 	public void updateNotification(String message)
 	{
 		if ( mNotify != null ) {
@@ -163,6 +190,9 @@ public class DemoService extends IntentService
 		}
 	}
 
+	/**
+	 * Tell android to remove the notification card from the notification bar
+	 */
 	public void tearDownNotification()
 	{
 		if ( mNotifyManager != null ) {
@@ -172,6 +202,9 @@ public class DemoService extends IntentService
 		mNotify = null;
 	}
 
+	/**
+	 * Tell android to create a place on the notification bar for us, and set an initial notification card
+	 */
 	public void setUpNotification()
 	{
 		mNotifyManager = (NotificationManager) getSystemService( NOTIFICATION_SERVICE );
@@ -194,18 +227,27 @@ public class DemoService extends IntentService
 	 */
 	public class LocalBinder extends Binder
 	{
+		/**
+		 * Called by the service client to tell the service about
+		 */
 		public void setHandler(Handler handler)
 		{
 			mHandler = handler;
-			// Resend the last message
+			// Resend the last message after connect
 			sendMessage( mLastMessage );
 		}
 
+		/**
+		 * Called by the service client when disconnecting from the service
+		 */
 		public void clearHandler()
 		{
 			DemoService.this.mHandler = null;
 		}
 
+		/**
+		 * Called by the service client to ask what task the service is currently running
+		 */
 		public String getTask()
 		{
 			return DemoService.this.mCurrentTask;

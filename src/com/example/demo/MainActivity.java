@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -17,6 +16,9 @@ public class MainActivity extends Activity
 	{
 		super.onCreate( savedInstanceState );
 		setContentView( R.layout.main );
+
+		// Create the service client, this will also re-create the progress dialog
+		// on orientation change
 		mClient = new DemoServiceClient( this, new OnCompleteInterface()
 		{
 			@Override
@@ -29,6 +31,10 @@ public class MainActivity extends Activity
 						.show();
 			}
 		} );
+
+		// -------------------------------------
+		// Setup our Buttons and Actions
+		// -------------------------------------
 
 		Button syncButton = (Button) findViewById( R.id.sync_button );
 		syncButton.setOnClickListener( new View.OnClickListener()
@@ -72,25 +78,9 @@ public class MainActivity extends Activity
 	}
 
 	@Override
-	public void onResume()
-	{
-		Log.e( "DEMO", "onResume()" );
-		super.onResume();
-		mClient.show();
-	}
-
-	@Override
 	public void onPause()
 	{
-		Log.e( "DEMO", "onPause()" );
 		super.onPause();
 		mClient.dismiss();
-	}
-
-	@Override
-	public void onDestroy()
-	{
-		Log.e( "DEMO", "onDestroy()" );
-		super.onDestroy();
 	}
 }

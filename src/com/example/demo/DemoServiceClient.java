@@ -23,24 +23,34 @@ public class DemoServiceClient
 	private Activity mActivity;
 	private Handler mHandler;
 
+	/**
+	 * Manages the progress bar and connection to the running service
+	 *
+	 * Always call this constructor in the onCreate() of your Activity, it
+	 * will re-display the progress dialog on orientation change
+	 */
 	public DemoServiceClient(Activity _activity, OnCompleteInterface _callBack)
 	{
 
+		// Create a handler the service will use to communicate with us
 		mHandler = new Handler()
 		{
 			@Override
 			public void handleMessage(Message msg)
 			{
 				switch ( msg.what ) {
+					// Message sent when progress changes
 					case DemoService.ON_PROGRESS:
 						if ( mProgressDialog != null )
 							mProgressDialog.setMessage( (String) msg.obj );
 						break;
+					// Message sent when task is complete
 					case DemoService.ON_COMPLETE:
 						if ( mCallBack != null )
 							mCallBack.onComplete( msg.arg1, (String) msg.obj );
 						dismiss();
 						break;
+					// Message sent when service switches tasks
 					case DemoService.ON_TASK_CHANGE:
 						setTitle( mBinder.getTask() );
 						break;
@@ -49,9 +59,18 @@ public class DemoServiceClient
 		};
 		mActivity = _activity;
 		mCallBack = _callBack;
-		show();
+
+		// If the service is running
+		if ( isServiceRunning() ) {
+			// Re-connect so we can receive progress messages
+			connectToService();
+			showProgress();
+		}
 	}
 
+	/**
+	 * Create and show the progress dialog
+	 */
 	private void showProgress()
 	{
 		if ( mProgressDialog == null ) {
@@ -63,16 +82,8 @@ public class DemoServiceClient
 		mProgressDialog.show();
 	}
 
-	public void show()
-	{
-		if ( isServiceRunning() ) {
-			connectToService();
-			showProgress();
-		}
-	}
-
 	/**
-	 * Call this from your Activity onStop() method, so the resumeWith() method works correctly
+	 * Call this from your Activity's onPause() method
 	 */
 	public void dismiss()
 	{
@@ -84,6 +95,9 @@ public class DemoServiceClient
 		mBinder = null;
 	}
 
+	/**
+	 * Asks android if the service is running
+	 */
 	private boolean isServiceRunning()
 	{
 		ActivityManager manager = (ActivityManager) mActivity.getSystemService( Context.ACTIVITY_SERVICE );
@@ -95,6 +109,9 @@ public class DemoServiceClient
 		return false;
 	}
 
+	/**
+	 * Queues up a task for the service to run, starts the service if its not already running
+	 */
 	public void start(String job)
 	{
 		mActivity.startService( new Intent( job ) );
@@ -102,31 +119,45 @@ public class DemoServiceClient
 		showProgress();
 	}
 
+	/**
+	 * Connects to an already running service
+	 */
 	private void connectToService()
 	{
+		// If a connection already exists, return
 		if ( mConnection != null ) {
 			return;
 		}
+
 		mConnection = new ServiceConnection()
 		{
 			@Override
 			public void onServiceConnected(ComponentName name, IBinder service)
 			{
+				// Get an instance of the Binder and cast it to something we know about
 				mBinder = (DemoService.LocalBinder) service;
+				// Tell the binder how to pass messages to us
 				mBinder.setHandler( mHandler );
+				// Change the title of progress bar to the task the service is preforming
 				setTitle( mBinder.getTask() );
 			}
 
 			@Override
 			public void onServiceDisconnected(ComponentName componentName)
 			{
+				// onServiceDisconnected is not always called on disconnect, but if it is
 				mBinder.clearHandler();
 				mBinder = null;
 			}
 		};
+		// Pass 0 as the last argument to bindService so we don't create the service on connect this allows
+		// bindService to fail if the service doesn't exist when we attempt to connect
 		mActivity.bindService( new Intent( mActivity, DemoService.class ), mConnection, 0 );
 	}
 
+	/**
+	 * Sets the title of our progress dialog to the task the service is currently preforming
+	 */
 	private void setTitle(String title)
 	{
 		if ( title == DemoService.SYNC ) {
