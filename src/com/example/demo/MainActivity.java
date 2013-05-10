@@ -6,10 +6,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class MainActivity extends Activity
 {
 	DemoServiceClient mClient = null;
+	DownloadFile mDownloadFile = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -29,6 +31,22 @@ public class MainActivity extends Activity
 						.setMessage( String.format( getString( R.string.service_task ), who ) )
 						.setPositiveButton( getString( R.string.ok ), null )
 						.show();
+			}
+		} );
+
+		// Create our download file AsyncTask
+		mDownloadFile = new DownloadFile( this, new OnCompleteInterface()
+		{
+			@Override
+			public void onComplete(int count, String error)
+			{
+				if ( error == null )
+					// If no error, the download was a success
+					Toast.makeText( MainActivity.this, getString(R.string.download_complete), Toast.LENGTH_LONG ).show();
+				else {
+					// If error, display the error to the user
+					Toast.makeText( MainActivity.this, error, Toast.LENGTH_LONG ).show();
+				}
 			}
 		} );
 
@@ -66,6 +84,16 @@ public class MainActivity extends Activity
 			}
 		} );
 
+		Button downloadButton = (Button) findViewById( R.id.download_file_button );
+		downloadButton.setOnClickListener( new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View view)
+			{
+				mDownloadFile.execute( "http://www.textfiles.com/food/bakebred.txt");
+			}
+		} );
+
 		Button subActivityButton = (Button) findViewById( R.id.sub_activity_button );
 		subActivityButton.setOnClickListener( new View.OnClickListener()
 		{
@@ -82,5 +110,6 @@ public class MainActivity extends Activity
 	{
 		super.onPause();
 		mClient.dismiss();
+		mDownloadFile.dismiss();
 	}
 }

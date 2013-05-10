@@ -11,4 +11,8 @@
 	<string name="sync_running">Sync Running</string>
 	<string name="scan_running">Scan Running</string>
 	<string name="run_both">Run Both</string>
+	<string name="retrieving_data">Retrieving Data</string>
+	<string name="connection_failed">Connection Failed</string>
+	<string name="download_complete">Download Complete</string>
+	<string name="download_file">Download File</string>
 </resources>
