@@ -9,13 +9,21 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-
+/**
+ * Class to handle file download and the progress dialog
+ */
 public class DownloadFile extends AsyncTask<String, Integer, String>
 {
 	private static volatile ProgressDialog mProgressDialog = null;
 	private final OnCompleteInterface mCallBack;
 	private Context mContext;
 
+	/**
+	 * Manages the progress bar
+	 *
+	 * Always call this constructor in the onCreate() of your Activity, it
+	 * will re-display the progress dialog on orientation change
+	 */
 	public DownloadFile(Context context, OnCompleteInterface callBack)
 	{
 		mContext = context;
@@ -28,6 +36,11 @@ public class DownloadFile extends AsyncTask<String, Integer, String>
 		}
 	}
 
+	/**
+	 * This code runs in a thread separate from the UI, and preforms the actual download
+	 *
+	 * Returns a string if there was an error
+	 */
 	@Override
 	protected String doInBackground(String... sUrl)
 	{
@@ -53,6 +66,9 @@ public class DownloadFile extends AsyncTask<String, Integer, String>
 		return null;
 	}
 
+	/**
+	 * This code runs in the UI thread and displays the Progress dialog
+	 */
 	protected void onPreExecute()
 	{
 		mProgressDialog = new ProgressDialog( mContext );
@@ -64,11 +80,17 @@ public class DownloadFile extends AsyncTask<String, Integer, String>
 		mProgressDialog.show();
 	}
 
+	/**
+	 * This code runs in the UI thread and updates the download progress
+	 */
 	protected void onProgressUpdate(Integer... progress)
 	{
 		mProgressDialog.setProgress( progress[0] );
 	}
 
+	/**
+	 * This code runs in the UI thread and is called when the download is complete
+	 */
 	protected void onPostExecute(String result)
 	{
 		if ( mProgressDialog != null ) {
@@ -81,6 +103,9 @@ public class DownloadFile extends AsyncTask<String, Integer, String>
 			mCallBack.onComplete( 0, result );
 	}
 
+	/**
+	 * Call this from your Activity's onPause() method
+	 */
 	public void dismiss()
 	{
 		if ( mProgressDialog != null ) {
