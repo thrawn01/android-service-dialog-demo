@@ -14,7 +14,7 @@ import java.net.URLConnection;
  */
 public class DownloadFile extends AsyncTask<String, Integer, String>
 {
-	private static volatile ProgressDialog mProgressDialog = null;
+	private static ProgressDialog mProgressDialog = null;
 	private final OnCompleteInterface mCallBack;
 	private Context mContext;
 
